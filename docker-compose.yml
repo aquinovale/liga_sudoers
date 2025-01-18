@@ -1,0 +1,47 @@
+services:
+  postgres_liga_sudoers:
+    image: postgres:latest
+    container_name: postgres_liga_sudoers
+    environment:
+      POSTGRES_USER: sudoers
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: liga_sudoers
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdata_liga_sudoers:/var/lib/postgresql/data
+      - ./liga_sudoers.sql:/docker-entrypoint-initdb.d/liga_sudoers.sql
+
+  postgres_liga_sudoers_dw:
+    image: postgres:latest
+    container_name: postgres_liga_sudoers_dw
+    environment:
+      POSTGRES_USER: sudoers
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: liga_sudoers_dw
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata_liga_sudoers_dw:/var/lib/postgresql/data_dw
+      - ./liga_sudoers_dw.sql:/docker-entrypoint-initdb.d/liga_sudoers_dw.sql
+
+
+  etl_scripts:
+    image: apache/hop-web:latest
+    container_name: etl_scripts
+    depends_on:
+      - postgres_liga_sudoers
+      - postgres_liga_sudoers_dw
+    ports:
+      - "8080:8080"
+    environment:      
+     - HOP_PROJECT_FOLDER=/files
+     - HOP_PROJECT_NAME=default
+    volumes:
+      - ./etl_sudoers:/files
+    working_dir: /files
+    #entrypoint: ["/files/entrypoint.sh"]
+
+volumes:
+  pgdata_liga_sudoers:
+  pgdata_liga_sudoers_dw:

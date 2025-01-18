@@ -1,0 +1,88 @@
+Table pessoas {
+  id bigint [primary key]
+  nome varchar
+  sexo varchar
+  dt_nasc date
+  created_at timestamp 
+  updated_at timestamp 
+}
+
+Table pedidos{
+  id_pessoa bigint [primary key]
+  id int [primary key]  
+  dt_venda timestamp
+  valor_total decimal
+}
+
+Table auditoria_pedidos{  
+  id_pedido bigint [primary key]
+  dispositivo varchar
+  geohash varchar
+  telefone varchar
+}
+
+Table itens_pedidos{  
+  id_pedido int [primary key]
+  id_produto int [primary key]
+  qtde int
+  valor_total decimal
+}
+
+Table categorias {
+  id integer [primary key]
+  descricao varchar      
+}
+
+Table produtos {
+  id_categoria integer [primary key]
+  id integer [primary key]  
+  descricao varchar    
+  valor_unit decimal
+  created_at timestamp 
+  updated_at timestamp 
+}
+
+Table dim_produtos {    
+  sk_produto serial [primary key]  
+  id integer
+  cat_desc varchar 
+  descricao varchar 
+  created_at timestamp 
+  updated_at timestamp    
+}
+
+Table dim_pessoas {
+  sk_pessoa serial [primary key]
+  id bigint
+  nome varchar
+  sexo varchar
+  dt_nasc date
+  created_at timestamp 
+  updated_at timestamp 
+}
+
+
+
+Table fato_pedidos {
+  sk_id serial [primary key]
+  id_pedido integer
+  sk_pessoa bigint
+  sk_produto integer
+  dispositivo varchar
+  localizacao varchar
+  telefone varchar
+  dt_venda timestamp
+  qtde int
+  valor_unit decimal
+  total decimal  
+}
+
+Ref: fato_pedidos.sk_produto > dim_produtos.sk_produto
+Ref: fato_pedidos.sk_pessoa > dim_pessoas.sk_pessoa
+
+
+Ref: categorias.id < produtos.id_categoria
+Ref: pedidos.id < itens_pedidos.id_pedido
+Ref: produtos.id < itens_pedidos.id_produto
+Ref: pessoas.id < pedidos.id_pessoa
+Ref: pedidos.id < auditoria_pedidos.id_pedido
