@@ -178,10 +178,10 @@ SELECT * FROM dw.dim_pessoas WHERE id = 1;
 
 -- Insere dados para analise histórica da dim_pessoa
 INSERT INTO dw.fato_pedidos(id_pedido, sk_pessoa, sk_produto, dispositivo, geohash, telefone, dt_venda, qtde, valor_unit, total) 
-SELECT * FROM (SELECT 1, 43, 163, 'dispositivo', 'geohash', 'telefone', CAST('2025-01-10' as date), 1, 2, 4 UNION ALL  SELECT 1, 43, 173, 'dispositivo', 'geohash', 'telefone', CAST('2025-01-10' as date), 1, 2, 4) x;
+SELECT * FROM (SELECT 1, 21, 6, 'dispositivo', 'geohash', 'telefone', CAST('2025-01-10' as date), 1, 2, 4 UNION ALL  SELECT 1, 21, 16, 'dispositivo', 'geohash', 'telefone', CAST('2025-01-10' as date), 1, 2, 4) x;
 
 INSERT INTO dw.fato_pedidos(id_pedido, sk_pessoa, sk_produto, dispositivo, geohash, telefone, dt_venda, qtde, valor_unit, total) 
-SELECT * FROM (SELECT 1, 44, 162, 'dispositivo', 'geohash', 'telefone', CAST('2025-01-10' as date), 1, 3, 6 UNION ALL  SELECT 1, 44, 192, 'dispositivo', 'geohash', 'telefone', CAST('2025-01-18' as date), 1, 3, 6) x;
+SELECT * FROM (SELECT 1, 22, 19, 'dispositivo', 'geohash', 'telefone', CAST('2025-01-10' as date), 1, 3, 6 UNION ALL  SELECT 1, 22, 28, 'dispositivo', 'geohash', 'telefone', CAST('2025-01-18' as date), 1, 3, 6) x;
 
 
 SELECT dp.id, dp.nome, avg(valor_unit), sum(valor_unit)

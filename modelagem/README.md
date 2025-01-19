@@ -10,7 +10,7 @@ Este repositório visa mostrar o processo trandicional de geração de dados em 
   * liga_sudoers_historico.py - Gera dados históricos com pedidos com data retroativas, não gera novos produtos nem novos clientes. Gera 1% de dados que serão considerados fraude para treinamento do modelo. 
   * liga_sudoers_streaming.py - Gera dados streamind com pedidos com data atual, gera novos clientes e registra novos pedidos. Gera 5% de dados que serão considerados fraude para treinamento do modelo. 
 
-  [Vídeo Explicativo](https://www.youtube.com/watch?v=_52m-Md9VXU)
+  [Vídeo Explicativo](https://youtu.be/Kc-mmy8eMcA)
 
 
 ## Estrutura da Fraude
