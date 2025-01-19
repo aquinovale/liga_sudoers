@@ -4,11 +4,13 @@ Este repositório visa mostrar o processo trandicional de geração de dados em 
   * 1 ambiente PostgreSQL com modelagem transacional, usando 3 forma normal (3FN)
   * 1 ambiente PostgreSQL com modelagem dimensional. usando star schema. 
   * 1 ambiente com Apache Hop para processos de ETL entre os servidores PostgreSQL. 
-  * 1 ambiente com Redash para construção de dashboards que serão usados para analytics. 
+  * 1 ambiente com Metabase para construção de dashboards que serão usados para analytics. 
   
   Dentro do repositório teremos os scripts em Python que irão simular a entrada de dados:
   * liga_sudoers_historico.py - Gera dados históricos com pedidos com data retroativas, não gera novos produtos nem novos clientes. Gera 1% de dados que serão considerados fraude para treinamento do modelo. 
   * liga_sudoers_streaming.py - Gera dados streamind com pedidos com data atual, gera novos clientes e registra novos pedidos. Gera 5% de dados que serão considerados fraude para treinamento do modelo. 
+
+  [Vídeo Explicativo](https://www.youtube.com/watch?v=_52m-Md9VXU)
 
 
 ## Estrutura da Fraude
