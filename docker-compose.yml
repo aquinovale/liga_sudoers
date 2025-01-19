@@ -1,4 +1,6 @@
 services:
+
+#### Container para Banco de Dados Transacional e Dimensional
   postgres_liga_sudoers:
     image: postgres:latest
     container_name: postgres_liga_sudoers
@@ -10,7 +12,7 @@ services:
       - "5434:5432"
     volumes:
       - pgdata_liga_sudoers:/var/lib/postgresql/data
-      - ./liga_sudoers.sql:/docker-entrypoint-initdb.d/liga_sudoers.sql
+      - ./ddl/liga_sudoers.sql:/docker-entrypoint-initdb.d/liga_sudoers.sql
 
   postgres_liga_sudoers_dw:
     image: postgres:latest
@@ -23,8 +25,9 @@ services:
       - "5433:5432"
     volumes:
       - pgdata_liga_sudoers_dw:/var/lib/postgresql/data_dw
-      - ./liga_sudoers_dw.sql:/docker-entrypoint-initdb.d/liga_sudoers_dw.sql
+      - ./ddl/liga_sudoers_dw.sql:/docker-entrypoint-initdb.d/liga_sudoers_dw.sql
 
+#### Container para ETL's 
 
   etl_scripts:
     image: apache/hop-web:latest
@@ -40,8 +43,38 @@ services:
     volumes:
       - ./etl_sudoers:/files
     working_dir: /files
-    #entrypoint: ["/files/entrypoint.sh"]
+
+#### Container para Dashboards
+
+  metabase:
+    image: metabase/metabase:latest
+    container_name: metabase
+    ports:
+      - "3000:3000"
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase
+      MB_DB_PORT: 5432
+      MB_DB_USER: metabase
+      MB_DB_PASS: metabase
+      MB_DB_HOST: metabase_db
+    depends_on:
+      - metabase_db
+
+  metabase_db:
+    image: postgres:13
+    container_name: metabase_db
+    environment:
+      POSTGRES_USER: metabase
+      POSTGRES_PASSWORD: metabase
+      POSTGRES_DB: metabase
+    ports:
+      - "5436:5432"
+    volumes:
+      - metabase_db_data:/var/lib/postgresql/data
+      - ./metabase_db/metabase_backup.sql:/docker-entrypoint-initdb.d/metabase_backup.sql
 
 volumes:
+  metabase_db_data:
   pgdata_liga_sudoers:
   pgdata_liga_sudoers_dw:

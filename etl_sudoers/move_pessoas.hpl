@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <pipeline>
   <info>
-    <name>move_dim_pessoas</name>
+    <name>move_pessoas</name>
     <name_sync_with_filename>Y</name_sync_with_filename>
     <description/>
     <extended_description/>
     <pipeline_version/>
     <pipeline_type>Normal</pipeline_type>
+    <pipeline_status>0</pipeline_status>
     <parameters>
     </parameters>
     <capture_transform_performance>N</capture_transform_performance>
@@ -58,17 +59,17 @@
   <order>
     <hop>
       <from>pessoas</from>
-      <to>insert</to>
+      <to>stg_pessoas</to>
       <enabled>Y</enabled>
     </hop>
     <hop>
-      <from>insert</from>
-      <to>dimensao</to>
+      <from>stg_pessoas</from>
+      <to>dim_pessoas</to>
       <enabled>Y</enabled>
     </hop>
   </order>
   <transform>
-    <name>dimensao</name>
+    <name>dim_pessoas</name>
     <type>ExecSql</type>
     <description/>
     <distribute>Y</distribute>
@@ -99,16 +100,12 @@
       </argument>
     </arguments>
     <connection>postgres_liga_sudoers_dw</connection>
-    <delete_field/>
     <execute_each_row>N</execute_each_row>
-    <insert_field/>
     <quoteString>N</quoteString>
-    <read_field/>
     <replace_variables>N</replace_variables>
     <set_params>N</set_params>
     <single_statement>Y</single_statement>
     <sql>INSERT INTO dim_pessoas(id, nome, sexo, dt_nasc, created_at, updated_at) SELECT * FROM stg_pessoas WHERE NOT EXISTS ( SELECT 1 FROM dim_pessoas WHERE dim_pessoas.id = stg_pessoas.id AND dim_pessoas.nome = stg_pessoas.nome AND dim_pessoas.sexo = stg_pessoas.sexo AND dim_pessoas.dt_nasc = stg_pessoas.dt_nasc AND dim_pessoas.created_at = stg_pessoas.created_at AND dim_pessoas.updated_at = stg_pessoas.updated_at);</sql>
-    <update_field/>
     <attributes/>
     <GUI>
       <xloc>608</xloc>
@@ -116,7 +113,7 @@
     </GUI>
   </transform>
   <transform>
-    <name>insert</name>
+    <name>stg_pessoas</name>
     <type>PGBulkLoader</type>
     <description/>
     <distribute>Y</distribute>
@@ -127,6 +124,7 @@
       <schema_name/>
     </partitioning>
     <connection>postgres_liga_sudoers_dw</connection>
+    <db_override/>
     <delimiter>;</delimiter>
     <enclosure>"</enclosure>
     <load_action>TRUNCATE</load_action>
