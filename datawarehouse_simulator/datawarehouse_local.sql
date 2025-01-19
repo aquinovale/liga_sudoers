@@ -1,3 +1,51 @@
+-- Consulta operacional
+SELECT * FROM pessoas WHERE id = 1;
+
+SELECT p.nome, MAX(pe.dt_venda)
+FROM pessoas p INNER JOIN pedidos pe ON pe.id_pessoa = p.id
+WHERE dt_venda >= now() - interval '2 days'
+GROUP BY 1 LIMIT 10;
+
+-- Consulta analitica simples
+-- Total por cliente nos últimos 7 dias
+SELECT pes.nome, sum(p.valor_total)
+FROM pedidos p
+        INNER JOIN pessoas pes ON pes.id = p.id_pessoa                
+WHERE dt_venda >= now() - interval '7 days'        
+GROUP BY 1 ORDER BY 2 DESC LIMIT 10;
+
+
+
+-- Query Analitica buscando as informações em uma modelagem transacional
+-- Valor total e média por mês, categoria e geohash
+-- Para facilitar alguns criam VIEWS, evitando assim reconstruir essa estrura de visão dimensional. 
+SELECT geohash, cat_desc, EXTRACT(MONTH FROM dt_venda) as mes, avg(COALESCE(valor_unit, 0 )) as media, sum(COALESCE(valor_unit, 0 )) as total
+FROM ( -- VIEW
+    SELECT c.descricao as cat_desc, *
+    FROM pedidos p            
+            INNER JOIN auditoria_pedidos a ON a.id_pedido = p.id
+            INNER JOIN itens_pedidos ip 
+                INNER JOIN produtos pr 
+                    INNER JOIN categorias c ON c.id = pr.id_categoria
+                ON pr.id = ip.id_produto
+            ON ip.id_pedido = p.id                        
+) fato_pedidos
+GROUP BY 1, 2, 3, mes
+ORDER BY 1, 3, 2, mes
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 -- Adiciona pessoas na dim_pessoas caso não existem em dim_pessoas, e adiciona a mesma pessoa - em um sk_pessoa novo - caso tenha existido alguma mudança nos campos
 -- Em ambiente maiores, é importante que essa movimentação seja feita por período de data, normalmente diário. Daí o termo D-1.
 INSERT INTO dw.dim_pessoas (id, nome, sexo, dt_nasc, created_at, updated_at)
@@ -63,33 +111,6 @@ WHERE NOT EXISTS (
 );    
 
                 
--- Para facilitar alguns criam VIEWS, evitando assim reconstruir essa estrura de visão dimensional. 
-SELECT *
-FROM pedidos p
-        INNER JOIN pessoas pes ON pes.id = p.id_pessoa                
-        INNER JOIN auditoria_pedidos a ON a.id_pedido = p.id
-        INNER JOIN itens_pedidos ip 
-            INNER JOIN produtos pr 
-                INNER JOIN categorias c ON c.id = pr.id_categoria
-            ON pr.id = ip.id_produto
-        ON ip.id_pedido = p.id                
-
--- Query Analitica buscando as informações em uma modelagem transacional
-SELECT geohash, cat_desc, EXTRACT(MONTH FROM dt_venda) as mes, avg(COALESCE(valor_unit, 0 )) as media, sum(COALESCE(valor_unit, 0 )) as total
-FROM (
-    SELECT c.descricao as cat_desc, *
-    FROM pedidos p            
-            INNER JOIN auditoria_pedidos a ON a.id_pedido = p.id
-            INNER JOIN itens_pedidos ip 
-                INNER JOIN produtos pr 
-                    INNER JOIN categorias c ON c.id = pr.id_categoria
-                ON pr.id = ip.id_produto
-            ON ip.id_pedido = p.id                        
-) fato_pedidos
-GROUP BY 1, 2, 3, mes
-ORDER BY 1, 3, 2, mes
-
-
 -- Query Analitica buscando as informações em uma modelagem dimensional
 SELECT geohash, cat_desc, EXTRACT(MONTH FROM dt_venda) as mes, avg(COALESCE(valor_unit, 0 )) as media, sum(COALESCE(valor_unit, 0 )) as total
 FROM dw.fato_pedidos fp
