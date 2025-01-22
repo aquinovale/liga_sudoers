@@ -31,7 +31,7 @@ FROM ( -- VIEW
             ON ip.id_pedido = p.id                        
 ) fato_pedidos
 GROUP BY 1, 2, 3, mes
-ORDER BY 1, 3, 2, mes
+ORDER BY 1, 3, 2, mes;
 
 
 
@@ -116,7 +116,7 @@ SELECT geohash, cat_desc, EXTRACT(MONTH FROM dt_venda) as mes, avg(COALESCE(valo
 FROM dw.fato_pedidos fp
     INNER JOIN dw.dim_produtos dpr ON dpr.sk_produto = fp.sk_produto
 GROUP BY 1, 2, 3, mes
-ORDER BY 1, 3, 2, mes
+ORDER BY 1, 3, 2, mes;
 
 
  
@@ -186,8 +186,32 @@ SELECT * FROM (SELECT 1, 22, 19, 'dispositivo', 'geohash', 'telefone', CAST('202
 
 SELECT dp.id, dp.nome, avg(valor_unit), sum(valor_unit)
     FROM dw.fato_pedidos fp INNER JOIN dw.dim_pessoas dp ON dp.sk_pessoa = fp.sk_pessoa
-GROUP BY 1, 2
+GROUP BY 1, 2;
 
 SELECT dp.id, max(dp.nome), min(dp.nome), avg(valor_unit), sum(valor_unit)
     FROM dw.fato_pedidos fp INNER JOIN dw.dim_pessoas dp ON dp.sk_pessoa = fp.sk_pessoa
-GROUP BY 1
+GROUP BY 1;
+
+
+-- Query Analitica buscando as informações em uma modelagem transacional
+SELECT geohash, cat_desc, EXTRACT(MONTH FROM dt_venda) as mes, avg(COALESCE(valor_unit, 0 )) as media, sum(COALESCE(valor_unit, 0 )) as total
+FROM (
+    SELECT c.descricao as cat_desc, *
+    FROM pedidos p            
+            INNER JOIN auditoria_pedidos a ON a.id_pedido = p.id
+            INNER JOIN itens_pedidos ip 
+                INNER JOIN produtos pr 
+                    INNER JOIN categorias c ON c.id = pr.id_categoria
+                ON pr.id = ip.id_produto
+            ON ip.id_pedido = p.id                        
+) fato_pedidos
+GROUP BY 1, 2, 3, mes
+ORDER BY 1, 3, 2, mes LIMIT 5;
+
+
+-- Query Analitica buscando as informações em uma modelagem dimensional
+SELECT geohash, cat_desc, EXTRACT(MONTH FROM dt_venda) as mes, avg(COALESCE(valor_unit, 0 )) as media, sum(COALESCE(valor_unit, 0 )) as total
+FROM dw.fato_pedidos fp
+    INNER JOIN dw.dim_produtos dpr ON dpr.sk_produto = fp.sk_produto
+GROUP BY 1, 2, 3, mes
+ORDER BY 1, 3, 2, mes LIMIT 5;

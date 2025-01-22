@@ -4,7 +4,7 @@
       "databaseName": "liga_sudoers",
       "pluginId": "POSTGRESQL",
       "accessType": 0,
-      "hostname": "postgres_liga_sudoers",
+      "hostname": "postgres_liga_sudoers_lake",
       "password": "Encrypted 2be98afc86aa7f2e4bb18bd63c99dbdde",
       "pluginName": "PostgreSQL",
       "port": "5432",

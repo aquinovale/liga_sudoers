@@ -1,141 +1,32 @@
-# Liga Sudoers - Dados Transacionais e Dados Dimensionais
+# Data Modeling
+![Old School](old_school.png "Old School")
 
-Este repositório visa mostrar o processo trandicional de geração de dados em ambiente transacionais e ETL para ambiente analiticos. Ao subir os containeres serão:
-  * 1 ambiente PostgreSQL com modelagem transacional, usando 3 forma normal (3FN)
-  * 1 ambiente PostgreSQL com modelagem dimensional. usando star schema. 
-  * 1 ambiente com Apache Hop para processos de ETL entre os servidores PostgreSQL. 
-  * 1 ambiente com Metabase para construção de dashboards que serão usados para analytics. 
-  
-  Dentro do repositório teremos os scripts em Python que irão simular a entrada de dados:
-  * liga_sudoers_historico.py - Gera dados históricos com pedidos com data retroativas, não gera novos produtos nem novos clientes. Gera 1% de dados que serão considerados fraude para treinamento do modelo. 
-  * liga_sudoers_streaming.py - Gera dados streamind com pedidos com data atual, gera novos clientes e registra novos pedidos. Gera 5% de dados que serão considerados fraude para treinamento do modelo. 
+Bem-vindo ao Mapa do Engenheiro de Dados, módulo Data Modeling! Este programa prático e desafiador recria situações reais enfrentadas por profissionais da área de dados. Aqui, você aprenderá a construir modelos transacionais e dimensionais, além de desenvolver fluxos de ETL para movimentar dados entre esses dois mundos.
 
-  [Vídeo Explicativo](https://youtu.be/Kc-mmy8eMcA)
+Ao final do curso, você terá domínio de conceitos avançados de modelagem de dados e SQL, sendo capaz de criar soluções que simulam o dia a dia de grandes arquiteturas de dados.
 
+---
 
-## Estrutura da Fraude
+## Objetivos do Módulo
 
-A fraude é usada para treinar o modelo de Machine Learning que será usado para identificar fraudes em tempo real. O ambiente dimensional (DataWarehouse) extrai os dados via ETL (Apache Hop) e popula as informações em outro database para ser usado como ambiente analitico. Esse é um processo tradicional de manipulação de dados.
+- Compreender a modelagem transacional (3FN) e dimensional (Star Schema).
+- Desenvolver fluxos de ETL sem o uso de ferramentas automatizadas, utilizando SQL puro.
+- Simular a movimentação de dados em ambientes de **Data Warehousing**.
+- Criar consultas transacionais e analíticas com foco em performance e confiabilidade.
 
-A fraude é encontrada no geohash (Lat/Lon) da pessoa que fez o pedido. Será considerado fraude qualquer posição geohash fora dos estados de SP, MG e RJ. Ou seja, caso a compra seja de uma posição fora dos estados, deverá ser marcada como fraude. 
+---
 
-A fraude é encontrar no dispositivo da pessoa que fez o pedido. Será considerado fraude qualquer pedido que tenha um dispositivo diferente dos anteriores na hora da compra. Ou seja, se a pessoas comprou anteriormente com Iphone, e agora tentou comprar com um Samsung o pedido será marcado como fraude. 
+## Estrutura do Módulo
 
-## Estrutura do Projeto
+### Modelagem de Dados
+1. **Transacional (3FN)**: Estruturas normalizadas para garantir integridade e evitar redundância de dados.
+2. **Dimensional (Star Schema)**: Estruturas otimizadas para consultas analíticas, com tabelas de fato e dimensões.
 
-├── data_simulator
-│   ├── `functions.py`: Funções reutilizáveis para manipulação de banco de dados e geração de dados.
-│   ├── __init__.py
-│   ├── `liga_sudoers_historico.py`: Gera dados históricos e os insere no banco de dados.
-│   └── `liga_sudoers_streaming.py`: Gera dados para simulação de streaming de forma contínua.
-├── datawarehouse_simulator
-    ├── `datawarehouse_extern.sql`: Gera fluxos para criação do ETL externo
-    ├── `datawarehouse_local.sql`: Gera fluxos para criação do ETL interno
-    └── README.md: Detalhes de como executar as etapas 
-├── ddl
-│   ├── `liga_sudoers_dw.sql`: Script SQL para criação do banco de dados e tabelas do dimensional.
-│   ├── `liga_sudoers.sql`: Script SQL para criação do banco de dados e tabelas do transacional.
-│   └── `modelagem.txt`: Diagrama Entidade Relacionamento que foi desenvolvido usando o [dbdiagram.io](https://dbdiagram.io/)
-└── README.md: Detalhes de como executar as etapas 
-├── docker-compose.yml
-├── etl_sudoers
-│   ├── `move_pedidos.hpl`: Pipeline para ETL da tabelas pedidos
-│   ├── `move_pessoas.hpl`: Pipeline para ETL da tabelas pessoas
-│   ├── `move_produtos.hpl`: Pipeline para ETL da tabelas produtos
-│   ├── `postgres_liga_sudoers_dw.json`: Conexão para banco PostgreSQL DataWahouse (OLAP)
-│   └── `postgres_liga_sudoers.json`: Conexão para banco PostgreSQL Transacional (OLTP)
-└── README.md: Detalhes de como executar as etapas 
-├── liga_sudoers
-│   ├── entrypoint_liga_sudoers.sh
-│   └── entrypoint.sh
-├── liga_sudoers_dw
-│   ├── entrypoint_liga_sudoers_dw.sh
-│   └── entrypoint.sh
-├── README.md
-└── Virada-AWS.excalidraw
+### Simulação de Fluxos de Dados
+- **ETL Manual**: Processos de extração, transformação e carga sem o uso de ferramentas ETL dedicadas.
+- **Simulação de Entrada de Dados**: Geração de dados históricos e em streaming para preenchimento das bases.
 
-## Perfil e responsabilidades
-
-Perfis de profissionais e suas responsabilidades no dia a dia dos processos mostrados.
- - Database Administrator (DBA) ou Data Architect
- - Data Warehouse Specialist ou Data Architect
- - Data Engineer
- - Data Analyst ou Business Intelligence (BI) Analyst
-
-### Database Administrator (DBA) ou Data Architect
-Modelagem de Banco de Dados Transacional
-
-    Profissional: Database Administrator (DBA) ou Data Architect
-        Responsabilidades:
-            Planejar e implementar a estrutura de bancos de dados relacionais.
-            Garantir normalização, integridade referencial e alta performance em operações transacionais.
-            Criar índices, restrições, triggers e stored procedures para otimizar operações.
-            Monitorar e otimizar o desempenho do banco. 
-
-### Data Warehouse Specialist ou Data Architect            
-Modelagem Dimensional
-
-    Profissional: Data Warehouse Specialist ou Data Architect
-        Responsabilidades:
-            Projetar esquemas dimensionais como Star Schema e Snowflake Schema.
-            Criar tabelas de fato e dimensão para facilitar consultas analíticas.
-            Trabalhar com conceitos como surrogate keys, granularidade e hierarquias.
-            Garantir que os modelos atendam às necessidades de relatórios e análises.
-
-
-### Data Engineer
-Profissional: Data Engineer
-
-    Responsabilidades:
-        Desenvolver processos de ETL/ELT para extrair, transformar e carregar dados em Data Warehouses ou Data Lakes.
-        Automação e orquestração de fluxos de dados usando ferramentas como Apache Airflow, Apache Hop, Talend ou Python.
-        Integrar dados de múltiplas fontes e garantir qualidade e consistência.
-        Monitorar e corrigir falhas nos pipelines para garantir alta disponibilidade.
-
-### Data Analyst ou Business Intelligence (BI) Analyst
-Criação de Dashboards
-
-    Profissional: Data Analyst ou Business Intelligence (BI) Analyst
-        Responsabilidades:
-            Criar visualizações e relatórios interativos para tomada de decisão.
-            Utilizar ferramentas de BI como Power BI, Tableau, Looker ou Metabase.
-            Definir métricas e KPIs com base nos requisitos de negócios.
-            Trabalhar diretamente com as partes interessadas para transformar dados em insights acionáveis.
-
-## Pré-requisitos
-
-- Python 3.x
-- Biblioteca `psycopg2`
-- Biblioteca `Faker`
-
-### Instalação das dependências:
-```bash
-pip install psycopg2 faker
-```
-
-## Antes de Executar
-
-### Dar permissão de execução
-```bash
-chmod +x liga_sudoers/*.sh liga_sudoers_dw/*.sh
-```
-
-### Instalação do Docker Compose
-```bash
-sudo apt update
-sudo apt install docker-compose-plugin
-```
-
-### Verificação da Versão (opcional)
-```bash
-docker compose version
-```
-
-### Parar o PostgreSQL se estiver usando na máquina local (opcional)
-```bash
-sudo systemctl stop postgresql
-```
-
+---
 
 ## Como Executar
 
@@ -156,93 +47,160 @@ docker exec -it postgres_liga_sudoers psql -U sudoers -d liga_sudoers -c "\dt"
 docker exec -it postgres_liga_sudoers_dw psql -U sudoers -d liga_sudoers_dw -c "\dt"
 ```
 
-### Parar o Docker Compose caso esteja rodando
-```bash
-docker compose down -v
-```
 
-## Rodando inserção dos dados
+# Simulando a entrada de dados no DW
 
-### Inserção de dados Históricos
+## Vamos simular como seria o ETL sem o uso de nenhuma ferramenta
+
+
+### Rodando inserção dos dados
+
 ```bash
 #python3 data_simulator/liga_sudoers_historico.py <qtde_registros> 
-python3 data_simulator/liga_sudoers_historico.py 100
+python3 ../data_simulator/liga_sudoers_historico.py 100
 ```
 
 `<qtde_registros>` é 10 por padrão, que é pouco, tente usar algo em torno de 1000 para gerar uma massa grande de dados. 1000 registros podem demorar até 5 minutos para gerar todos os dados. E na execução do ETL pode demorar mais tempo ainda devido a movimentação inicial do histórico, então use esse valor com sabedoria. 
 
-### Inserção de dados Streaming (opcional)
+### Apagamos manualmente a tabela stg_pessoas
 ```bash
-python3 data_simulator/liga_sudoers_streaming.py 1
+docker exec -it postgres_liga_sudoers_dw_dm01 psql -U sudoers -d liga_sudoers_dw -c "TRUNCATE stg_pessoas; TRUNCATE stg_pedidos; TRUNCATE stg_produtos;"
 ```
 
-Esse python roda infinitamente, caso queira finalizá-lo será necessário executar o comando CTRL+C
-
-## Rodar Apache Hop
-### Rodar Apache Hop na interface UI
+### Vamos logar na máquina origem, com a modelagem transacional
 ```bash
-localhost:8080
-ou 
-127.0.0.1:8080
-```
-`user: cluster`
-`password: cluster`
-
-
-## Copie as conexões para dentro do container
-Ao abrir a UI será necessário importar as conexões do acessos ao postgreSQL
-
-```bash
-docker cp etl_sudoers/postgres_liga_sudoers.json etl_scripts:/usr/local/tomcat/webapps/ROOT/config/projects/default/metadata/rdbms/postgres_liga_sudoers.json
-
-docker cp etl_sudoers/postgres_liga_sudoers_dw.json etl_scripts:/usr/local/tomcat/webapps/ROOT/config/projects/default/metadata/rdbms/postgres_liga_sudoers_dw.json
+docker exec -it postgres_liga_sudoers_dm01 bash
 ```
 
-### Rodar o ETl na interface UI
-Abra o arquivo move_pessoas, move_produtos ou move_pedidos dentro do `/files` e execute o pipeline. Os arquivos .hpl (pipelines) estão localizados no diretório `/files`. Executar o move_pedidos por último, e executar os processos pelo menos 2 vezes seguidas. 
+### Logado na máquina vamos fazer o dump de uma tabela
+![Ambiente Transacional](otlp.png "OLTP")
 
-### Rodar Apache Hop no terminal
 ```bash
-docker exec -it etl_scripts bash
-/usr/local/tomcat/webapps/ROOT/hop-run.sh -f /files/move_pessoas.hpl --project default --runconfig local
-/usr/local/tomcat/webapps/ROOT/hop-run.sh -f /files/move_produtos.hpl --project default --runconfig local
-/usr/local/tomcat/webapps/ROOT/hop-run.sh -f /files/move_pedidos.hpl --project default --runconfig local
-# 2x 
-/usr/local/tomcat/webapps/ROOT/hop-run.sh -f /files/move_pessoas.hpl --project default --runconfig local
-/usr/local/tomcat/webapps/ROOT/hop-run.sh -f /files/move_produtos.hpl --project default --runconfig local
-/usr/local/tomcat/webapps/ROOT/hop-run.sh -f /files/move_pedidos.hpl --project default --runconfig local
+pg_dump -a -U sudoers -d liga_sudoers --table=pessoas > /tmp/pessoas.sql
+```
+
+### Verifique que o arquivo /tmp/produtos.sql possui o nome da tabela produtos, que não existe na origem. 
+### Fazemos a transformação básica para transmitir o arquivo para o destino
+![ETL](etl.png "ETL")
+
+```bash
+cat /tmp/pessoas.sql | sed s'/pessoas/stg_pessoas/g'  > /tmp/pessoas_transform.sql
 ```
 
 
-### Validar o ETL (Rode o HOP pelo menos 2 vezes)
+### Enviei o dump para o servidor de destino, o DW que irá armazenar a informação enviada na tabela de Staging
+![Ambiente Analítco](olap.png "OLAP")
+
+
 ```bash
-docker exec -it postgres_liga_sudoers_dw psql -U sudoers -d liga_sudoers_dw -c "SELECT * FROM dim_pessoas LIMIT 5;"
-docker exec -it postgres_liga_sudoers_dw psql -U sudoers -d liga_sudoers_dw -c "SELECT * FROM dim_produtos LIMIT 5;"
-docker exec -it postgres_liga_sudoers_dw psql -U sudoers -d liga_sudoers_dw -c "SELECT * FROM fato_pedidos LIMIT 5;"
+psql -U sudoers -d liga_sudoers_dw -h postgres_liga_sudoers_dw < /tmp/pessoas_transform.sql
+```
+- password : `password`
+
+
+### Para produtos e pedidos preciso fazer um ETL um pouco diferente
+É importante que já tenha populado a base com informações iniciais. 
+
+```bash
+psql -U sudoers -d liga_sudoers -h postgres_liga_sudoers -c 'COPY 
+(SELECT p.id, c.descricao, p.descricao, p.created_at, p.updated_at 
+    FROM produtos p INNER JOIN categorias c ON c.id = p.id_categoria) 
+TO STDOUT WITH (FORMAT text);' > /tmp/produtos.sql
+```
+```bash
+psql -U sudoers -d liga_sudoers -h postgres_liga_sudoers -c 'COPY 
+(SELECT p.id AS id_pedido, p.id_pessoa, i.id_produto, a.dispositivo, a.geohash, a.telefone, p.dt_venda, i.qtde, i.valor_total AS valor_unit, p.valor_total 
+        FROM pedidos p 
+            INNER JOIN itens_pedidos i 
+            ON p.id = i.id_pedido 
+            INNER JOIN auditoria_pedidos a 
+            ON p.id = a.id_pedido) 
+    TO STDOUT WITH (FORMAT text);' > /tmp/pedidos.sql
 ```
 
-## Datawarehouse
 
-Leia o Readme.md para entender o processo
-
-## Dashboards
-
-### Criar database
+### Importa tabela
 ```bash
-localhost:3000
-ou
-127.0.0.1:3000
-
+psql -U sudoers -d liga_sudoers_dw -h postgres_liga_sudoers_dw -c "COPY stg_produtos FROM STDIN;" < /tmp/produtos.sql
 ```
-`user: contato@sudoers.com.br`
-`senha: *liga01`
+
+```bash
+psql -U sudoers -d liga_sudoers_dw -h postgres_liga_sudoers_dw -c "COPY stg_pedidos FROM STDIN;" < /tmp/pedidos.sql
+```
+
+```bash
+psql -U sudoers -d liga_sudoers_dw -h postgres_liga_sudoers_dw -c "INSERT INTO dim_pessoas (id, nome, sexo, dt_nasc, created_at, updated_at)
+    SELECT id, nome, sexo, dt_nasc, created_at, updated_at
+    FROM stg_pessoas pessoas
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM dim_pessoas dp
+        WHERE pessoas.id = dp.id
+        AND pessoas.nome = dp.nome
+        AND pessoas.sexo = dp.sexo
+        AND pessoas.dt_nasc = dp.dt_nasc
+        AND pessoas.created_at = dp.created_at
+        AND pessoas.updated_at = dp.updated_at
+    );"
+```
 
 
-## Contribuição
+```bash
+psql -U sudoers -d liga_sudoers_dw -h postgres_liga_sudoers_dw -c "INSERT INTO dim_produtos(id, cat_desc, descricao, created_at, updated_at) 
+    SELECT p.id, p.cat_desc, p.descricao, p.created_at, p.updated_at 
+    FROM stg_produtos p         
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM dim_produtos dp
+        WHERE p.id = dp.id
+        AND p.cat_desc = dp.cat_desc
+        AND p.descricao = dp.descricao
+        AND p.created_at = dp.created_at
+        AND p.updated_at = dp.updated_at
+);"
+```
 
-Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou enviar pull requests.
+```bash
+psql -U sudoers -d liga_sudoers_dw -h postgres_liga_sudoers_dw -c "INSERT INTO fato_pedidos(id_pedido, sk_pessoa, sk_produto, dispositivo, geohash, telefone, dt_venda, qtde, valor_unit, total) 
+    SELECT s.id_pedido, sk_pessoa, sk_produto, dispositivo, geohash, telefone, dt_venda, qtde, valor_unit, valor_total 
+        FROM stg_pedidos s 
+            INNER JOIN dim_pessoas dp 
+                ON dp.id = s.id_pessoa 
+            INNER JOIN dim_produtos pr 
+                ON pr.id = s.id_produto
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM fato_pedidos
+    WHERE fato_pedidos.id_pedido = s.id_pedido
+      AND fato_pedidos.sk_pessoa = dp.sk_pessoa
+      AND fato_pedidos.sk_produto = pr.sk_produto
+      AND fato_pedidos.dt_venda = s.dt_venda
+      AND fato_pedidos.total = s.valor_total
+);"    
+```
 
-## Licença
+### Query validação modelagm transacional
+```bash
+psql -U sudoers -d liga_sudoers -h postgres_liga_sudoers -c "SELECT geohash, cat_desc, EXTRACT(MONTH FROM dt_venda) as mes, avg(COALESCE(valor_unit, 0 )) as media, sum(COALESCE(valor_unit, 0 )) as total
+FROM ( -- VIEW
+    SELECT c.descricao as cat_desc, *
+    FROM pedidos p            
+            INNER JOIN auditoria_pedidos a ON a.id_pedido = p.id
+            INNER JOIN itens_pedidos ip 
+                INNER JOIN produtos pr 
+                    INNER JOIN categorias c ON c.id = pr.id_categoria
+                ON pr.id = ip.id_produto
+            ON ip.id_pedido = p.id                        
+) fato_pedidos
+GROUP BY 1, 2, 3, mes
+ORDER BY 1, 3, 2, mes LIMIT 5;"
+```
 
-Este projeto está licenciado sob a Licença SUDOERS.
-
+### Query validação modelagem dimensional
+```bash
+psql -U sudoers -d liga_sudoers_dw -h postgres_liga_sudoers_dw -c "SELECT geohash, cat_desc, EXTRACT(MONTH FROM dt_venda) as mes, avg(COALESCE(valor_unit, 0 )) as media, sum(COALESCE(valor_unit, 0 )) as total
+FROM fato_pedidos fp
+    INNER JOIN dim_produtos dpr ON dpr.sk_produto = fp.sk_produto
+GROUP BY 1, 2, 3, mes
+ORDER BY 1, 3, 2, mes LIMIT 5;"
+```
