@@ -1,27 +1,97 @@
+# Data Modeling
+![Old School](old_school.png "Old School")
+
+Bem-vindo ao Mapa do Engenheiro de Dados, módulo Data Modeling! Este programa prático e desafiador recria situações reais enfrentadas por profissionais da área de dados. Aqui, você aprenderá a construir modelos transacionais e dimensionais, além de desenvolver fluxos de ETL para movimentar dados entre esses dois mundos.
+
+Ao final do curso, você terá domínio de conceitos avançados de modelagem de dados e SQL, sendo capaz de criar soluções que simulam o dia a dia de grandes arquiteturas de dados.
+
+---
+
+## Objetivos do Módulo
+
+- Compreender a modelagem transacional (3FN) e dimensional (Star Schema).
+- Desenvolver fluxos de ETL sem o uso de ferramentas automatizadas, utilizando SQL puro.
+- Simular a movimentação de dados em ambientes de **Data Warehousing**.
+- Criar consultas transacionais e analíticas com foco em performance e confiabilidade.
+
+---
+
+## Estrutura do Módulo
+
+### Modelagem de Dados
+1. **Transacional (3FN)**: Estruturas normalizadas para garantir integridade e evitar redundância de dados.
+2. **Dimensional (Star Schema)**: Estruturas otimizadas para consultas analíticas, com tabelas de fato e dimensões.
+
+### Simulação de Fluxos de Dados
+- **ETL Manual**: Processos de extração, transformação e carga sem o uso de ferramentas ETL dedicadas.
+- **Simulação de Entrada de Dados**: Geração de dados históricos e em streaming para preenchimento das bases.
+
+---
+
+## Como Executar
+
+### Iniciar Docker pela primeira vez (somente a primeira vez que rodar o processo)
+```bash
+docker compose up --build
+```
+
+### Iniciar Docker pela segunda vez
+```bash
+docker compose up 
+```
+
+
+### Validar se as bases de dados foram criadas corretamente
+```bash
+docker exec -it postgres_liga_sudoers psql -U sudoers -d liga_sudoers -c "\dt"
+docker exec -it postgres_liga_sudoers_dw psql -U sudoers -d liga_sudoers_dw -c "\dt"
+```
+
+
+# Simulando a entrada de dados no DW
+
 ## Vamos simular como seria o ETL sem o uso de nenhuma ferramenta
+
+
+### Rodando inserção dos dados
+
+```bash
+#python3 data_simulator/liga_sudoers_historico.py <qtde_registros> 
+python3 ../data_simulator/liga_sudoers_historico.py 100
+```
+
+`<qtde_registros>` é 10 por padrão, que é pouco, tente usar algo em torno de 1000 para gerar uma massa grande de dados. 1000 registros podem demorar até 5 minutos para gerar todos os dados. E na execução do ETL pode demorar mais tempo ainda devido a movimentação inicial do histórico, então use esse valor com sabedoria. 
+
 ### Apagamos manualmente a tabela stg_pessoas
 ```bash
-docker exec -it postgres_liga_sudoers_dw psql -U sudoers -d liga_sudoers_dw -c "TRUNCATE stg_pessoas; TRUNCATE stg_pedidos; TRUNCATE stg_produtos;"
+docker exec -it postgres_liga_sudoers_dw_dm01 psql -U sudoers -d liga_sudoers_dw -c "TRUNCATE stg_pessoas; TRUNCATE stg_pedidos; TRUNCATE stg_produtos;"
 ```
 
 ### Vamos logar na máquina origem, com a modelagem transacional
 ```bash
-docker exec -it postgres_liga_sudoers bash
+docker exec -it postgres_liga_sudoers_dm01 bash
 ```
 
 ### Logado na máquina vamos fazer o dump de uma tabela
+![Ambiente Transacional](otlp.png "OLTP")
+
 ```bash
 pg_dump -a -U sudoers -d liga_sudoers --table=pessoas > /tmp/pessoas.sql
 ```
 
 ### Verifique que o arquivo /tmp/produtos.sql possui o nome da tabela produtos, que não existe na origem. 
 ### Fazemos a transformação básica para transmitir o arquivo para o destino
+![ETL](etl.png "ETL")
+
 ```bash
 cat /tmp/pessoas.sql | sed s'/pessoas/stg_pessoas/g'  > /tmp/pessoas_transform.sql
 ```
 
 
 ### Enviei o dump para o servidor de destino, o DW que irá armazenar a informação enviada na tabela de Staging
+![Ambiente Analítco](olap.png "OLAP")
+
+
 ```bash
 psql -U sudoers -d liga_sudoers_dw -h postgres_liga_sudoers_dw < /tmp/pessoas_transform.sql
 ```
@@ -112,8 +182,16 @@ WHERE NOT EXISTS (
 ### Query validação modelagm transacional
 ```bash
 psql -U sudoers -d liga_sudoers -h postgres_liga_sudoers -c "SELECT geohash, cat_desc, EXTRACT(MONTH FROM dt_venda) as mes, avg(COALESCE(valor_unit, 0 )) as media, sum(COALESCE(valor_unit, 0 )) as total
-FROM dw.fato_pedidos fp
-    INNER JOIN dw.dim_produtos dpr ON dpr.sk_produto = fp.sk_produto
+FROM ( -- VIEW
+    SELECT c.descricao as cat_desc, *
+    FROM pedidos p            
+            INNER JOIN auditoria_pedidos a ON a.id_pedido = p.id
+            INNER JOIN itens_pedidos ip 
+                INNER JOIN produtos pr 
+                    INNER JOIN categorias c ON c.id = pr.id_categoria
+                ON pr.id = ip.id_produto
+            ON ip.id_pedido = p.id                        
+) fato_pedidos
 GROUP BY 1, 2, 3, mes
 ORDER BY 1, 3, 2, mes LIMIT 5;"
 ```

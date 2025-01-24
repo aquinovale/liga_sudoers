@@ -12,7 +12,7 @@ services:
       - "5434:5432"
     volumes:
       - pgdata_liga_sudoers:/var/lib/postgresql/data
-      - ./ddl/liga_sudoers.sql:/docker-entrypoint-initdb.d/liga_sudoers.sql
+      - ./modelagem/ddl/liga_sudoers.sql:/docker-entrypoint-initdb.d/liga_sudoers.sql
 
   postgres_liga_sudoers_dw:
     image: postgres:latest
@@ -25,7 +25,7 @@ services:
       - "5433:5432"
     volumes:
       - pgdata_liga_sudoers_dw:/var/lib/postgresql/data_dw
-      - ./ddl/liga_sudoers_dw.sql:/docker-entrypoint-initdb.d/liga_sudoers_dw.sql
+      - ./modelagem/ddl/liga_sudoers_dw.sql:/docker-entrypoint-initdb.d/liga_sudoers_dw.sql
 
 #### Container para ETL's 
 
@@ -72,7 +72,7 @@ services:
       - "5436:5432"
     volumes:
       - metabase_db_data:/var/lib/postgresql/data
-      - ./metabase_db/metabase_backup.sql:/docker-entrypoint-initdb.d/metabase_backup.sql
+      - ./dashboard/metabase_db/metabase_backup.sql:/docker-entrypoint-initdb.d/metabase_backup.sql
 
 volumes:
   metabase_db_data:
