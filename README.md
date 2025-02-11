@@ -29,7 +29,7 @@ A fraude é encontrada no geohash (Lat/Lon) da pessoa que fez o pedido. Será co
 A fraude é encontrar no dispositivo da pessoa que fez o pedido. Será considerado fraude qualquer pedido que tenha um dispositivo diferente dos anteriores na hora da compra. Ou seja, se a pessoas comprou anteriormente com Iphone, e agora tentou comprar com um Samsung o pedido será marcado como fraude. 
 
 ## Estrutura do Projeto
-
+```bash
 ├─modelagem
     ├── data_simulator
     │   ├── `functions.py`: Funções reutilizáveis para manipulação de banco de dados e geração de dados.
@@ -61,7 +61,7 @@ A fraude é encontrar no dispositivo da pessoa que fez o pedido. Será considera
 ├── README.md
 ├── Desafio - Jornada Engenheiro de Dados: Imagem da jornada do engenheiro de dados
 └── Virada-AWS.excalidraw
-
+```
 ## Perfil e responsabilidades
 
 Perfis de profissionais e suas responsabilidades no dia a dia dos processos mostrados.
@@ -166,7 +166,7 @@ docker exec -it postgres_liga_sudoers_dw psql -U sudoers -d liga_sudoers_dw -c "
 
 ### Parar o Docker Compose caso esteja rodando
 ```bash
-docker compose down -v
+docker compose stop
 ```
 
 ## Rodando inserção dos dados

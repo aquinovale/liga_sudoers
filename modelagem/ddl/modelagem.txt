@@ -12,6 +12,8 @@ Table pedidos{
   id int [primary key]  
   dt_venda timestamp
   valor_total decimal
+  created_at timestamp 
+  updated_at timestamp    
 }
 
 Table auditoria_pedidos{  
@@ -19,6 +21,8 @@ Table auditoria_pedidos{
   dispositivo varchar
   geohash varchar
   telefone varchar
+  created_at timestamp 
+  updated_at timestamp    
 }
 
 Table itens_pedidos{  
@@ -26,11 +30,15 @@ Table itens_pedidos{
   id_produto int [primary key]
   qtde int
   valor_total decimal
+  created_at timestamp 
+  updated_at timestamp    
 }
 
 Table categorias {
   id integer [primary key]
-  descricao varchar      
+  descricao varchar   
+  created_at timestamp 
+  updated_at timestamp       
 }
 
 Table produtos {

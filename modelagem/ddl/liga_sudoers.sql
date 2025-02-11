@@ -12,7 +12,9 @@ CREATE TABLE public.auditoria_pedidos (
     id_pedido integer NOT NULL,
     dispositivo character varying(50) NOT NULL,
     geohash character varying(50) NOT NULL,
-    telefone character varying(20) NOT NULL
+    telefone character varying(20) NOT NULL,
+    created_at timestamp without time zone DEFAULT now(),
+    updated_at timestamp without time zone DEFAULT now()
 );
 
 
@@ -24,7 +26,9 @@ ALTER TABLE public.auditoria_pedidos OWNER TO sudoers;
 
 CREATE TABLE public.categorias (
     id integer NOT NULL,
-    descricao character varying(255) NOT NULL
+    descricao character varying(255) NOT NULL,
+    created_at timestamp without time zone DEFAULT now(),
+    updated_at timestamp without time zone DEFAULT now()
 );
 
 
@@ -60,7 +64,9 @@ CREATE TABLE public.itens_pedidos (
     id_pedido integer NOT NULL,
     id_produto integer NOT NULL,
     qtde integer NOT NULL,
-    valor_total numeric(10,2) NOT NULL
+    valor_total numeric(10,2) NOT NULL,
+    created_at timestamp without time zone DEFAULT now(),
+    updated_at timestamp without time zone DEFAULT now()    
 );
 
 
@@ -74,7 +80,9 @@ CREATE TABLE public.pedidos (
     id integer NOT NULL,
     id_pessoa bigint NOT NULL,
     dt_venda timestamp without time zone NOT NULL,
-    valor_total numeric(10,2) NOT NULL
+    valor_total numeric(10,2) NOT NULL,
+    created_at timestamp without time zone DEFAULT now(),
+    updated_at timestamp without time zone DEFAULT now()    
 );
 
 
@@ -535,6 +543,28 @@ FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
 
 
+CREATE TRIGGER set_updated_at_categorias
+BEFORE UPDATE ON categorias
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
+
+
+CREATE TRIGGER set_updated_at_pedidos
+BEFORE UPDATE ON pedidos
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
+
+
+CREATE TRIGGER set_updated_at_itens_pedidos
+BEFORE UPDATE ON itens_pedidos
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
+
+
+CREATE TRIGGER set_updated_at_auditoria_pedidos
+BEFORE UPDATE ON auditoria_pedidos
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
 
 
 
