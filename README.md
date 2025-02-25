@@ -1,5 +1,5 @@
 # Jornada Engenharia de dados
-![Desafio Engenheiro de Dados](../Desafio%20-%20Jornada%20Engenharia%20de%20Dados.png "Desafio Engenheiro de Dados")
+![Desafio Engenheiro de Dados](Desafio%20-%20Jornada%20Engenharia%20de%20Dados.png "Desafio Engenheiro de Dados")
 
 Bem-vindo ao Mapa do Engenheiro de Dados, um programa prático e desafiador que recria situações reais enfrentadas por profissionais da área de dados. Neste módulo, você será guiado na construção de uma arquitetura robusta e paralela, que simula um ambiente dinâmico e ininterrupto, tal como ocorre no mercado.
 
@@ -73,32 +73,26 @@ Perfis de profissionais e suas responsabilidades no dia a dia dos processos most
 ### Database Administrator (DBA) ou Data Architect
 Modelagem de Banco de Dados Transacional
 
-    Profissional: Database Administrator (DBA) ou Data Architect
+    Profissional: Database Administrator (DBA)
         Responsabilidades:
             Planejar e implementar a estrutura de bancos de dados relacionais.
             Garantir normalização, integridade referencial e alta performance em operações transacionais.
             Criar índices, restrições, triggers e stored procedures para otimizar operações.
             Monitorar e otimizar o desempenho do banco. 
 
-### Data Warehouse Specialist ou Data Architect            
+### Data Warehouse Specialist
 Modelagem Dimensional
 
-    Profissional: Data Warehouse Specialist ou Data Architect
+    Profissional: Data Warehouse Specialist
         Responsabilidades:
             Projetar esquemas dimensionais como Star Schema e Snowflake Schema.
             Criar tabelas de fato e dimensão para facilitar consultas analíticas.
             Trabalhar com conceitos como surrogate keys, granularidade e hierarquias.
             Garantir que os modelos atendam às necessidades de relatórios e análises.
-
-
-### Data Engineer
-Profissional: Data Engineer
-
-    Responsabilidades:
-        Desenvolver processos de ETL/ELT para extrair, transformar e carregar dados em Data Warehouses ou Data Lakes.
-        Automação e orquestração de fluxos de dados usando ferramentas como Apache Airflow, Apache Hop, Talend ou Python.
-        Integrar dados de múltiplas fontes e garantir qualidade e consistência.
-        Monitorar e corrigir falhas nos pipelines para garantir alta disponibilidade.
+            Desenvolver processos de ETL/ELT para extrair, transformar e carregar dados em Data Warehouses.
+            Automação e orquestração de fluxos de dados usando ferramentas como Apache Hop, Talend ou Pentaho.
+            Integrar dados de múltiplas fontes e garantir qualidade e consistência.
+            Monitorar e corrigir falhas nos pipelines para garantir alta disponibilidade.
 
 ### Data Analyst ou Business Intelligence (BI) Analyst
 Criação de Dashboards
@@ -113,6 +107,7 @@ Criação de Dashboards
 ## Pré-requisitos
 
 - Python 3.x
+- Docker e Docker Compose
 - Biblioteca `psycopg2`
 - Biblioteca `Faker`
 

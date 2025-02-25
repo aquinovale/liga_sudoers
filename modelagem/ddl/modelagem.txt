@@ -41,6 +41,21 @@ Table categorias {
   updated_at timestamp       
 }
 
+Table dim_date {
+    date_key      int [primary key]
+    full_date     date
+    year          int
+    quarter       int
+    month         int
+    month_name    varchar
+    week_of_year  int
+    day_of_month  int
+    day_of_week   int
+    day_name      varchar
+    is_weekend    boolean
+    is_holiday    boolean
+}
+
 Table produtos {
   id_categoria integer [primary key]
   id integer [primary key]  
