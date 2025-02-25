@@ -66,8 +66,7 @@ A fraude é encontrar no dispositivo da pessoa que fez o pedido. Será considera
 
 Perfis de profissionais e suas responsabilidades no dia a dia dos processos mostrados.
  - Database Administrator (DBA)
- - Data Warehouse Specialist
- - Data Engineer
+ - Data Warehouse Specialist ou Data Engineer
  - Data Analyst ou Business Intelligence (BI) Analyst
 
 ### Database Administrator (DBA) ou Data Architect
@@ -83,7 +82,7 @@ Modelagem de Banco de Dados Transacional
 ### Data Warehouse Specialist
 Modelagem Dimensional
 
-    Profissional: Data Warehouse Specialist
+    Profissional: Data Warehouse Specialist ou Data Engineer
         Responsabilidades:
             Projetar esquemas dimensionais como Star Schema e Snowflake Schema.
             Criar tabelas de fato e dimensão para facilitar consultas analíticas.
