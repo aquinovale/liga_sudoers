@@ -119,7 +119,7 @@ pip install psycopg2 faker
 
 ### Dar permissão de execução
 ```bash
-chmod +x liga_sudoers/*.sh liga_sudoers_dw/*.sh
+chmod +x modelagem/liga_sudoers/*.sh modelagem/liga_sudoers_dw/*.sh
 ```
 
 ### Instalação do Docker Compose
