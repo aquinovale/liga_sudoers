@@ -65,8 +65,8 @@ A fraude é encontrar no dispositivo da pessoa que fez o pedido. Será considera
 ## Perfil e responsabilidades
 
 Perfis de profissionais e suas responsabilidades no dia a dia dos processos mostrados.
- - Database Administrator (DBA) ou Data Architect
- - Data Warehouse Specialist ou Data Architect
+ - Database Administrator (DBA)
+ - Data Warehouse Specialist
  - Data Engineer
  - Data Analyst ou Business Intelligence (BI) Analyst
 
