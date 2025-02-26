@@ -1,5 +1,5 @@
 # Data Modeling
-![Old School](old_school.png "Old School")
+![Old School](../modelagem/datawarehouse_simulator/old_school.png "Old School")
 
 Bem-vindo ao Mapa do Engenheiro de Dados, módulo Data Modeling! Este programa prático e desafiador recria situações reais enfrentadas por profissionais da área de dados. Aqui, você aprenderá a construir modelos transacionais e dimensionais, além de desenvolver fluxos de ETL para movimentar dados entre esses dois mundos.
 
@@ -73,7 +73,7 @@ docker exec -it postgres_liga_sudoers_dm01 bash
 ```
 
 ### Logado na máquina vamos fazer o dump de uma tabela
-![Ambiente Transacional](otlp.png "OLTP")
+![Ambiente Transacional](../modelagem/datawarehouse_simulator/oltp.png "OLTP")
 
 ```bash
 pg_dump -a -U sudoers -d liga_sudoers --table=pessoas > /tmp/pessoas.sql
@@ -81,7 +81,7 @@ pg_dump -a -U sudoers -d liga_sudoers --table=pessoas > /tmp/pessoas.sql
 
 ### Verifique que o arquivo /tmp/produtos.sql possui o nome da tabela produtos, que não existe na origem. 
 ### Fazemos a transformação básica para transmitir o arquivo para o destino
-![ETL](etl.png "ETL")
+![ETL](../modelagem/datawarehouse_simulator/etl.png "ETL")
 
 ```bash
 cat /tmp/pessoas.sql | sed s'/pessoas/stg_pessoas/g'  > /tmp/pessoas_transform.sql
@@ -89,7 +89,7 @@ cat /tmp/pessoas.sql | sed s'/pessoas/stg_pessoas/g'  > /tmp/pessoas_transform.s
 
 
 ### Enviei o dump para o servidor de destino, o DW que irá armazenar a informação enviada na tabela de Staging
-![Ambiente Analítco](olap.png "OLAP")
+![Ambiente Analítco](../modelagem/datawarehouse_simulator/olap.png "OLAP")
 
 
 ```bash
