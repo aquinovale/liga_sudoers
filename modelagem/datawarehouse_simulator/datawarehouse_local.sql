@@ -1,13 +1,14 @@
 -- Consulta operacional
-SELECT * FROM pessoas WHERE id = 1;
+SELECT * FROM pessoas LIMIT 10;
 
+-- Nome dos 10 primeiros clientes, que fizeram compra a pelo menos 2 dias atrás.
 SELECT p.nome, MAX(pe.dt_venda)
 FROM pessoas p INNER JOIN pedidos pe ON pe.id_pessoa = p.id
 WHERE dt_venda >= now() - interval '2 days'
 GROUP BY 1 LIMIT 10;
 
 -- Consulta analitica simples
--- Total por cliente nos últimos 7 dias
+-- Total por cliente nos últimos 7 dias na ordem do maior valor para o menor
 SELECT pes.nome, sum(p.valor_total)
 FROM pedidos p
         INNER JOIN pessoas pes ON pes.id = p.id_pessoa                
@@ -108,8 +109,43 @@ WHERE NOT EXISTS (
       AND dw.fato_pedidos.sk_produto = pr.sk_produto
       AND dw.fato_pedidos.dt_venda = s.dt_venda
       AND dw.fato_pedidos.total = s.valor_total
-);    
+);
 
+-- Query Analitica buscando as informações em uma modelagem transacional
+SELECT geohash, cat_desc, EXTRACT(MONTH FROM dt_venda) as mes, avg(COALESCE(valor_unit, 0 )) as media, sum(COALESCE(valor_unit, 0 )) as total
+FROM (
+    SELECT c.descricao as cat_desc, *
+    FROM pedidos p            
+            INNER JOIN auditoria_pedidos a ON a.id_pedido = p.id
+            INNER JOIN itens_pedidos ip 
+                INNER JOIN produtos pr 
+                    INNER JOIN categorias c ON c.id = pr.id_categoria
+                ON pr.id = ip.id_produto
+            ON ip.id_pedido = p.id                        
+) fato_pedidos
+GROUP BY 1, 2, 3, mes
+ORDER BY 1, 3, 2, mes LIMIT 5;
+
+
+-- Query Analitica buscando as informações em uma modelagem dimensional
+SELECT geohash, cat_desc, EXTRACT(MONTH FROM dt_venda) as mes, avg(COALESCE(valor_unit, 0 )) as media, sum(COALESCE(valor_unit, 0 )) as total
+FROM dw.fato_pedidos fp
+    INNER JOIN dw.dim_produtos dpr ON dpr.sk_produto = fp.sk_produto
+GROUP BY 1, 2, 3, mes
+ORDER BY 1, 3, 2, mes LIMIT 5;
+
+
+
+
+
+
+
+
+
+
+
+
+/*
                 
 -- Query Analitica buscando as informações em uma modelagem dimensional
 SELECT geohash, cat_desc, EXTRACT(MONTH FROM dt_venda) as mes, avg(COALESCE(valor_unit, 0 )) as media, sum(COALESCE(valor_unit, 0 )) as total
@@ -117,9 +153,6 @@ FROM dw.fato_pedidos fp
     INNER JOIN dw.dim_produtos dpr ON dpr.sk_produto = fp.sk_produto
 GROUP BY 1, 2, 3, mes
 ORDER BY 1, 3, 2, mes;
-
-
- 
 
 -- Fará a inserção de uma nova pessoa
 INSERT INTO dw.dim_pessoas (id, nome, sexo, dt_nasc, created_at, updated_at)
@@ -142,7 +175,7 @@ WHERE NOT EXISTS (
 INSERT INTO dw.dim_pessoas (id, nome, sexo, dt_nasc, created_at, updated_at)
 SELECT id, nome, sexo, dt_nasc, created_at, updated_at
 FROM (
-    SELECT 1 as id, 'Liga Sudoers' as nome, 'M' as sexo, cast('1985-10-01' as date) as dt_nasc, CAST('2025-01-01' as date) created_at, CAST('2025-01-10' as date) updated_at
+    SELECT 1 as id, 'Liga Sudoers' as nome, 'M' as sexo, cast('1985-10-01' as date) as dt_nasc, CAST('2025-01-01' as date) created_at, CAST('2025-01-01' as date) updated_at
 ) pessoas
 WHERE NOT EXISTS (
     SELECT 1
@@ -191,27 +224,4 @@ GROUP BY 1, 2;
 SELECT dp.id, max(dp.nome), min(dp.nome), avg(valor_unit), sum(valor_unit)
     FROM dw.fato_pedidos fp INNER JOIN dw.dim_pessoas dp ON dp.sk_pessoa = fp.sk_pessoa
 GROUP BY 1;
-
-
--- Query Analitica buscando as informações em uma modelagem transacional
-SELECT geohash, cat_desc, EXTRACT(MONTH FROM dt_venda) as mes, avg(COALESCE(valor_unit, 0 )) as media, sum(COALESCE(valor_unit, 0 )) as total
-FROM (
-    SELECT c.descricao as cat_desc, *
-    FROM pedidos p            
-            INNER JOIN auditoria_pedidos a ON a.id_pedido = p.id
-            INNER JOIN itens_pedidos ip 
-                INNER JOIN produtos pr 
-                    INNER JOIN categorias c ON c.id = pr.id_categoria
-                ON pr.id = ip.id_produto
-            ON ip.id_pedido = p.id                        
-) fato_pedidos
-GROUP BY 1, 2, 3, mes
-ORDER BY 1, 3, 2, mes LIMIT 5;
-
-
--- Query Analitica buscando as informações em uma modelagem dimensional
-SELECT geohash, cat_desc, EXTRACT(MONTH FROM dt_venda) as mes, avg(COALESCE(valor_unit, 0 )) as media, sum(COALESCE(valor_unit, 0 )) as total
-FROM dw.fato_pedidos fp
-    INNER JOIN dw.dim_produtos dpr ON dpr.sk_produto = fp.sk_produto
-GROUP BY 1, 2, 3, mes
-ORDER BY 1, 3, 2, mes LIMIT 5;
+*/

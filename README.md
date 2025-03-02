@@ -180,6 +180,164 @@ python3 data_simulator/liga_sudoers_streaming.py 1
 
 Esse python roda infinitamente, caso queira finalizá-lo será necessário executar o comando CTRL+C
 
+## Modelagem Dimensional Local
+```bash
+docker exec -it postgres_liga_sudoers bash 
+psql -U sudoers -d liga_sudoers -h postgres_liga_sudoers
+```
+
+Acesso o arquivo `modelagem/datawarehouse_simulator/datawarehouse_local.sql` e execute os comandos do arquivo dentro do banco OLTP.  
+
+## Modelagem Dimensional Externa
+Vamos agora para o banco OLAP para simular o ETL e a movimentação de dados. 
+
+### Apagamos manualmente a tabela stg_pessoas
+```bash
+docker exec -it postgres_liga_sudoers_dw psql -U sudoers -d liga_sudoers_dw -c "TRUNCATE stg_pessoas; TRUNCATE stg_pedidos; TRUNCATE stg_produtos;"
+```
+
+### Vamos logar na máquina origem, com a modelagem transacional
+```bash
+docker exec -it postgres_liga_sudoers bash
+```
+
+Logado na máquina vamos fazer o dump (E) da tabela Pessoa
+
+![Ambiente Transacional](modelagem/datawarehouse_simulator/oltp.png "OLTP")
+
+```bash
+pg_dump -a -U sudoers -d liga_sudoers --table=pessoas > /tmp/pessoas.sql
+```
+
+Verifique que o arquivo /tmp/pessoas.sql possui o nome da tabela pessoas, porém essa tabela não existe na origem. Com isso precisaremos fazer uma leve transformação (T) . 
+
+Fazemos a transformação básica para transmitir o arquivo para o destino
+
+![ETL](modelagem/datawarehouse_simulator/etl.png "ETL")
+
+```bash
+cat /tmp/pessoas.sql | sed s'/pessoas/stg_pessoas/g'  > /tmp/pessoas_transform.sql
+```
+
+
+Enviei o arquivo para o servidor de destino, o servidor de DW irá armazenar a informação enviada na tabela de Staging. Com isso faremos o carregamento do arquivo (L).
+
+![Ambiente Analítco](modelagem/datawarehouse_simulator/olap.png "OLAP")
+
+
+```bash
+psql -U sudoers -d liga_sudoers_dw -h postgres_liga_sudoers_dw < /tmp/pessoas_transform.sql
+```
+- password : `password`
+
+
+### Para produtos e pedidos preciso fazer um ETL um pouco diferente
+É importante que já tenha populado a base com informações iniciais. 
+
+```bash
+psql -U sudoers -d liga_sudoers -h postgres_liga_sudoers -c 'COPY 
+(SELECT p.id, c.descricao, p.descricao, p.created_at, p.updated_at 
+    FROM produtos p INNER JOIN categorias c ON c.id = p.id_categoria) 
+TO STDOUT WITH (FORMAT text);' > /tmp/produtos.sql
+```
+```bash
+psql -U sudoers -d liga_sudoers -h postgres_liga_sudoers -c 'COPY 
+(SELECT p.id AS id_pedido, p.id_pessoa, i.id_produto, a.dispositivo, a.geohash, a.telefone, p.dt_venda, i.qtde, i.valor_total AS valor_unit, p.valor_total 
+        FROM pedidos p 
+            INNER JOIN itens_pedidos i 
+            ON p.id = i.id_pedido 
+            INNER JOIN auditoria_pedidos a 
+            ON p.id = a.id_pedido) 
+    TO STDOUT WITH (FORMAT text);' > /tmp/pedidos.sql
+```
+
+
+### Importa tabela
+```bash
+psql -U sudoers -d liga_sudoers_dw -h postgres_liga_sudoers_dw -c "COPY stg_produtos FROM STDIN;" < /tmp/produtos.sql
+```
+
+```bash
+psql -U sudoers -d liga_sudoers_dw -h postgres_liga_sudoers_dw -c "COPY stg_pedidos FROM STDIN;" < /tmp/pedidos.sql
+```
+
+```bash
+psql -U sudoers -d liga_sudoers_dw -h postgres_liga_sudoers_dw -c "INSERT INTO dim_pessoas (id, nome, sexo, dt_nasc, created_at, updated_at)
+    SELECT id, nome, sexo, dt_nasc, created_at, updated_at
+    FROM stg_pessoas pessoas
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM dim_pessoas dp
+        WHERE pessoas.id = dp.id
+        AND pessoas.nome = dp.nome
+        AND pessoas.sexo = dp.sexo
+        AND pessoas.dt_nasc = dp.dt_nasc
+        AND pessoas.created_at = dp.created_at
+        AND pessoas.updated_at = dp.updated_at
+    );"
+```
+
+
+```bash
+psql -U sudoers -d liga_sudoers_dw -h postgres_liga_sudoers_dw -c "INSERT INTO dim_produtos(id, cat_desc, descricao, created_at, updated_at) 
+    SELECT p.id, p.cat_desc, p.descricao, p.created_at, p.updated_at 
+    FROM stg_produtos p         
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM dim_produtos dp
+        WHERE p.id = dp.id
+        AND p.cat_desc = dp.cat_desc
+        AND p.descricao = dp.descricao
+        AND p.created_at = dp.created_at
+        AND p.updated_at = dp.updated_at
+);"
+```
+
+```bash
+psql -U sudoers -d liga_sudoers_dw -h postgres_liga_sudoers_dw -c "INSERT INTO fato_pedidos(id_pedido, sk_pessoa, sk_produto, dispositivo, geohash, telefone, dt_venda, qtde, valor_unit, total) 
+    SELECT s.id_pedido, sk_pessoa, sk_produto, dispositivo, geohash, telefone, dt_venda, qtde, valor_unit, valor_total 
+        FROM stg_pedidos s 
+            INNER JOIN dim_pessoas dp 
+                ON dp.id = s.id_pessoa 
+            INNER JOIN dim_produtos pr 
+                ON pr.id = s.id_produto
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM fato_pedidos
+    WHERE fato_pedidos.id_pedido = s.id_pedido
+      AND fato_pedidos.sk_pessoa = dp.sk_pessoa
+      AND fato_pedidos.sk_produto = pr.sk_produto
+      AND fato_pedidos.dt_venda = s.dt_venda
+      AND fato_pedidos.total = s.valor_total
+);"    
+```
+
+### Query validação modelagm transacional
+```bash
+psql -U sudoers -d liga_sudoers -h postgres_liga_sudoers -c "SELECT geohash, cat_desc, EXTRACT(MONTH FROM dt_venda) as mes, avg(COALESCE(valor_unit, 0 )) as media, sum(COALESCE(valor_unit, 0 )) as total
+FROM ( -- VIEW
+    SELECT c.descricao as cat_desc, *
+    FROM pedidos p            
+            INNER JOIN auditoria_pedidos a ON a.id_pedido = p.id
+            INNER JOIN itens_pedidos ip 
+                INNER JOIN produtos pr 
+                    INNER JOIN categorias c ON c.id = pr.id_categoria
+                ON pr.id = ip.id_produto
+            ON ip.id_pedido = p.id                        
+) fato_pedidos
+GROUP BY 1, 2, 3, mes
+ORDER BY 1, 3, 2, mes LIMIT 5;"
+```
+
+### Query validação modelagem dimensional
+```bash
+psql -U sudoers -d liga_sudoers_dw -h postgres_liga_sudoers_dw -c "SELECT geohash, cat_desc, EXTRACT(MONTH FROM dt_venda) as mes, avg(COALESCE(valor_unit, 0 )) as media, sum(COALESCE(valor_unit, 0 )) as total
+FROM fato_pedidos fp
+    INNER JOIN dim_produtos dpr ON dpr.sk_produto = fp.sk_produto
+GROUP BY 1, 2, 3, mes
+ORDER BY 1, 3, 2, mes LIMIT 5;"
+```
+
 ## Rodar Apache Hop
 ### Rodar Apache Hop na interface UI
 
@@ -193,16 +351,7 @@ ou
 `password: cluster`
 
 
-## Copie as conexões para dentro do container
-Ao abrir a UI será necessário importar as conexões do acessos ao postgreSQL. 
-
-```bash
-docker cp modelagem/etl_sudoers/postgres_liga_sudoers.json etl_scripts:/usr/local/tomcat/webapps/ROOT/config/projects/default/metadata/rdbms/postgres_liga_sudoers.json
-
-docker cp modelagem/etl_sudoers/postgres_liga_sudoers_dw.json etl_scripts:/usr/local/tomcat/webapps/ROOT/config/projects/default/metadata/rdbms/postgres_liga_sudoers_dw.json
-```
-
-### Rodar o ETl na interface UI
+### Rodar o ETL na interface UI
 Abra o arquivo move_pessoas, move_produtos ou move_pedidos dentro do `/files` e execute o pipeline. Os arquivos .hpl (pipelines) estão localizados no diretório `/files`. Executar o move_pedidos por último, e executar os processos pelo menos 2 vezes seguidas. 
 
 ### Rodar Apache Hop no terminal
@@ -221,17 +370,15 @@ docker exec -it etl_scripts bash
 /usr/local/tomcat/webapps/ROOT/hop-run.sh -f /files/move_pedidos_reprocessamento.hpl --project default --runconfig local --parameters REFERENCE_DATE=2025-01-10
 ```
 
+ Obs.: Por algum motivo, a imagem docker precisa que rode o HOP duas vezes para os dados serem escritos corretamente. (Rode o HOP pelo menos 2 vezes)
 
-### Validar o ETL (Rode o HOP pelo menos 2 vezes)
+
+### Validar o ETL
 ```bash
 docker exec -it postgres_liga_sudoers_dw psql -U sudoers -d liga_sudoers_dw -c "SELECT * FROM dim_pessoas LIMIT 5;"
 docker exec -it postgres_liga_sudoers_dw psql -U sudoers -d liga_sudoers_dw -c "SELECT * FROM dim_produtos LIMIT 5;"
 docker exec -it postgres_liga_sudoers_dw psql -U sudoers -d liga_sudoers_dw -c "SELECT * FROM fato_pedidos LIMIT 5;"
 ```
-
-## Datawarehouse
-
-Leia o Readme.md para entender o processo
 
 ## Dashboards
 
@@ -240,7 +387,6 @@ Leia o Readme.md para entender o processo
 localhost:3000
 ou
 127.0.0.1:3000
-
 ```
 `user: contato@sudoers.com.br`
 `senha: *liga01`
