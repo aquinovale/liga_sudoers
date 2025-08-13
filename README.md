@@ -19,6 +19,8 @@ Este repositório visa mostrar o processo trandicional de geração de dados em 
 
   [Vídeo Explicativo](https://youtu.be/Kc-mmy8eMcA)
 
+  [Aula 01](https://www.youtube.com/watch?v=Y6LnIujlbhc&list=PLD3-a_5KsN3nuXukrq8kCYtxnZR4FD2nJ&index=10)
+
 
 ## Estrutura da Fraude
 
